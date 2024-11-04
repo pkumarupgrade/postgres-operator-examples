@@ -1,10 +1,15 @@
 apiVersion: postgres-operator.crunchydata.com/v1beta1
 kind: PostgresCluster
 metadata:
-  name: hippo-ha
+  name: crunchy-ha
 spec:
-  image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-16.3-1
-  postgresVersion: 16
+  service: 
+    type: LoadBalancer
+  imagePullSecrets:
+  - name: crunchyreg
+  image: registry.crunchydata.com/crunchydata/crunchy-postgres:ubi8-15.7-5.6.0-2
+  # image: registry.crunchydata.com/crunchydata/crunchy-postgres:ubi8-15.8-5.6.2-0
+  postgresVersion: 15
   instances:
     - name: pgha1
       replicas: 2
@@ -22,11 +27,12 @@ spec:
               topologyKey: kubernetes.io/hostname
               labelSelector:
                 matchLabels:
-                  postgres-operator.crunchydata.com/cluster: hippo-ha
+                  postgres-operator.crunchydata.com/cluster: crunchy-ha
                   postgres-operator.crunchydata.com/instance-set: pgha1
   backups:
     pgbackrest:
-      image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbackrest:ubi8-2.51-1
+      image: registry.crunchydata.com/crunchydata/crunchy-pgbackrest:ubi8-5.6.0-2
+      # image: registry.crunchydata.com/crunchydata/crunchy-pgbackrest:ubi8-5.6.2-0
       repos:
       - name: repo1
         volume:
@@ -36,9 +42,13 @@ spec:
             resources:
               requests:
                 storage: 1Gi
+  monitoring:
+    pgmonitor:
+      exporter:
+        image: registry.crunchydata.com/crunchydata/crunchy-postgres-exporter:ubi8-5.6.0-2  
   proxy:
     pgBouncer:
-      image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbouncer:ubi8-1.22-1
+      image: registry.crunchydata.com/crunchydata/crunchy-pgbouncer:ubi8-1.22-1
       replicas: 2
       affinity:
         podAntiAffinity:
@@ -48,5 +58,15 @@ spec:
               topologyKey: kubernetes.io/hostname
               labelSelector:
                 matchLabels:
-                  postgres-operator.crunchydata.com/cluster: hippo-ha
+                  postgres-operator.crunchydata.com/cluster: crunchy-ha
                   postgres-operator.crunchydata.com/role: pgbouncer
+  patroni:
+    dynamicConfiguration:
+      postgresql:
+        parameters:
+          max_parallel_workers: 2
+          max_worker_processes: 2
+          shared_buffers: 1GB
+          work_mem: 2MB
+        pg_hba:
+          - "hostssl all all all scram-sha-256"

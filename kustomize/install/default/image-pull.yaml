@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: crunchyreg
+data:
+  .dockerconfigjson: '{"auths":{"registry.crunchydata.com":{"username":"pkumar@upgrade.com","password":"9om8fRamew34q=B","email":"pkumar@upgrade.com","auth":"cGt1bWFyQHVwZ3JhZGUuY29tOjlvbThmUmFtZXczNHE9Qg=="}}}'
+type: kubernetes.io/dockerconfigjson
