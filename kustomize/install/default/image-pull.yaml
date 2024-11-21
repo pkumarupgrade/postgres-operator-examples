@@ -3,5 +3,5 @@ kind: Secret
 metadata:
   name: crunchyreg
 data:
-  .dockerconfigjson: '{"auths":{"registry.crunchydata.com":{"username":"pkumar@upgrade.com","password":"9om8fRamew34q=B","email":"pkumar@upgrade.com","auth":"cGt1bWFyQHVwZ3JhZGUuY29tOjlvbThmUmFtZXczNHE9Qg=="}}}'
+  .dockerconfigjson: eyJhdXRocyI6eyJyZWdpc3RyeS5jcnVuY2h5ZGF0YS5jb20iOnsidXNlcm5hbWUiOiJwa3VtYXJAdXBncmFkZS5jb20iLCJwYXNzd29yZCI6IjlvbThmUmFtZXczNHE9QiIsImVtYWlsIjoicGt1bWFyQHVwZ3JhZGUuY29tIiwiYXV0aCI6ImNHdDFiV0Z5UUhWd1ozSmhaR1V1WTI5dE9qbHZiVGhtVW1GdFpYY3pOSEU5UWc9PSJ9fX0=
 type: kubernetes.io/dockerconfigjson
