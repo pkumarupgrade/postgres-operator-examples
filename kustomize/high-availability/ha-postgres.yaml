@@ -1,12 +1,15 @@
 apiVersion: postgres-operator.crunchydata.com/v1beta1
 kind: PostgresCluster
 metadata:
-  name: crunchy-ha
+  name: crunchy-poc
 spec:
   service: 
     type: LoadBalancer
+    metadata:
+      annotations: 
+        service.beta.kubernetes.io/aws-load-balancer-internal: "true"
   imagePullSecrets:
-  - name: crunchyreg
+  - name: crtestreg
   image: registry.crunchydata.com/crunchydata/crunchy-postgres:ubi8-15.7-5.6.0-2
   # image: registry.crunchydata.com/crunchydata/crunchy-postgres:ubi8-15.8-5.6.2-0
   postgresVersion: 15
@@ -27,7 +30,7 @@ spec:
               topologyKey: kubernetes.io/hostname
               labelSelector:
                 matchLabels:
-                  postgres-operator.crunchydata.com/cluster: crunchy-ha
+                  postgres-operator.crunchydata.com/cluster: crunchy-poc
                   postgres-operator.crunchydata.com/instance-set: pgha1
   backups:
     pgbackrest:
@@ -58,15 +61,30 @@ spec:
               topologyKey: kubernetes.io/hostname
               labelSelector:
                 matchLabels:
-                  postgres-operator.crunchydata.com/cluster: crunchy-ha
+                  postgres-operator.crunchydata.com/cluster: crunchy-poc
                   postgres-operator.crunchydata.com/role: pgbouncer
+      resources:
+        requests:
+          ephemeral-storage: "2Gi" # Request 2GiB of ephemeral storage
+        limits:
+          ephemeral-storage: "4Gi" # Limit usage to 4GiB of ephemeral storage
+          
+  # patroni:
+  #   dynamicConfiguration:
+  #     postgresql:
+  #       parameters:
+  #         max_parallel_workers: 2
+  #         max_worker_processes: 2
+  #         shared_buffers: 1GB
+  #         work_mem: 2MB
+  #       pg_hba:
+  #         - "hostssl all all all scram-sha-256"
   patroni:
     dynamicConfiguration:
       postgresql:
         parameters:
-          max_parallel_workers: 2
-          max_worker_processes: 2
-          shared_buffers: 1GB
-          work_mem: 2MB
-        pg_hba:
-          - "hostssl all all all scram-sha-256"
+          max_parallel_workers: 8
+          max_worker_processes: 8
+          wal_sender_timeout: 10min
+          shared_buffers: 128MB
+          work_mem: 4MB
